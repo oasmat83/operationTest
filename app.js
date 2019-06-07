@@ -30,9 +30,10 @@ function postData(x, y) {
     request.post(url + 'api/v1/submit-task', {
         json: {
           id: x,
-          result: y
+          result: y 
         }
     }, function (error, response, body) {
-        console.log("Your status code is '" + response.statusCode + "', and your calcaulation is '" + body + "'");
+        data = xn.chkResponse(response);
+        console.log(data);
     });
 }
