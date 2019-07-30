@@ -1,39 +1,37 @@
-var https = require('https'),
-request = require('request'),
-url = 'https://interview.adpeai.com/',
-xn = require('./chkMath');
+var http = require('http'),
+express = require('express'),
+app = express(),
+bodyParser = require('body-parser'),
+morgan = require('morgan'),
+fs = require('fs'),
+configenv = require('./env'),
+apiRoutes = express.Router(); 
 
-// Getting Data From API
-httpreq = https.get(url + 'api/v1/get-task', res => {
-    let body = '',
-    json = "";
-    if (res.statusCode !== 200) {
-        console.log("Request Failed");
-        return false
-    }
-    res.on('data', data => {
-        body += data;
-        json = JSON.parse(body),
-        data = xn.chkMath(json);
-        postData(json.id, data);
-        console.log("Request is successfull! Here is your id '" + json.id + "'");
-    })
-})
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
-httpreq.on('error', e => {
-    console.log("Request Failed");
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(morgan('dev'));
+
+apiRoutes.post('/getBody', function(req, res) {
+    res.json(req.body);
 });
 
 
-// Posting Data to API
-function postData(x, y) {
-    request.post(url + 'api/v1/submit-task', {
-        json: {
-          id: x,
-          result: y 
-        }
-    }, function (error, response, body) {
-        data = xn.chkResponse(response);
-        console.log(data);
-    });
+app.use('/api', apiRoutes);
+
+
+
+if (configenv.envir === "development"){
+    http.createServer(app).listen(configenv.port);
 }
+
+else{
+    app.listen(process.env.PORT);  
+}
+
+console.log('API running on ' + configenv.envir + '"port:'+ configenv.port + '"');
